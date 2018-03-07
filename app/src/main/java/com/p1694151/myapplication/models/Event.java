@@ -3,7 +3,7 @@ package com.p1694151.myapplication.models;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by jaspinderkaur on 07/03/18.
+ * Created by paalwinder on 07/03/18.
  */
 
 public class Event {
