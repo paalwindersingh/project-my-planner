@@ -8,19 +8,33 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 
 import com.p1694151.myapplication.R;
+import com.p1694151.myapplication.adapter.TodoListAdapter;
+import com.p1694151.myapplication.models.TodoItem;
 import com.p1694151.myapplication.storage.LocalStore;
+
+import java.util.ArrayList;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private CalendarView simpleCalendarView;
     private FloatingActionButton addTodo;
+    private CardView emptyView;
+    private CardView cvHeader;
+    private RecyclerView todoListRv;
+    private RecyclerView.LayoutManager layoutManager;
+    private TodoListAdapter adapter;
+    private ArrayList<TodoItem> todoList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +52,12 @@ public class DrawerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        addTodo = (FloatingActionButton) findViewById(R.id.fab_todo); // get the reference of CalendarView
+        emptyView = (CardView) findViewById(R.id.cardView);
+        cvHeader = (CardView) findViewById(R.id.cv_header);
+        todoListRv = (RecyclerView) findViewById(R.id.rv_todo_list);
+        addTodo = (FloatingActionButton) findViewById(R.id.fab_todo);
+
+
         simpleCalendarView = (CalendarView) findViewById(R.id.calendarView); // get the reference of CalendarView
         simpleCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -54,6 +73,30 @@ public class DrawerActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
+        getTodoList();
+
+        setAdapter();
+    }
+
+    private void getTodoList() {
+        //todo replace with data from api call
+        todoList.add(new TodoItem(0, "Go to gym", "try exercising for 30mins"));
+        todoList.add(new TodoItem(0, "get some grocery", "stop at bigmart while returning from work"));
+        todoList.add(new TodoItem(0, "Do assignment", "Work 2hrs daily on final project"));
+        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));
+
+        emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
+        cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private void setAdapter() {
+        adapter = new TodoListAdapter(todoList);
+        layoutManager = new LinearLayoutManager(this);
+
+        todoListRv.setLayoutManager(layoutManager);
+        todoListRv.setItemAnimator(new DefaultItemAnimator());
+        todoListRv.setAdapter(adapter);
     }
 
     @Override
