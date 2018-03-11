@@ -5,7 +5,7 @@ package com.p1694151.myapplication.webservice;
  */
 
 public class Constants {
-    public static final String BASE_URL = "http://www.localhost:8080";
+    public static final String BASE_URL = "http://192.168.0.167:8080";
     public static final String BASE_URL_EXTENSION = "/CplannerA/webresources/generic/";
 
     public static final String SIGN_UP = BASE_URL_EXTENSION + "signup";
