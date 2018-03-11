@@ -3,6 +3,7 @@ package com.p1694151.myapplication.webservice;
 
 
 import com.p1694151.myapplication.models.GeneralResponse;
+import com.p1694151.myapplication.models.TodoListResponse;
 import com.p1694151.myapplication.models.User;
 
 import retrofit2.Call;
@@ -44,8 +45,8 @@ public interface API {
     @GET(EVENT_LIST)
     Call<GeneralResponse> getEventList();
 
-    @GET(TODO_LIST)
-    Call<GeneralResponse> getTodoList(@Query("userId") String userId);
+    @GET(TODO_LIST+"{query}")
+    Call<TodoListResponse> getTodoList(@Path("query") String userId);
 
     @GET(TODO_LIST_ITEM)
     Call<GeneralResponse> getTodoListItem(@Query("todoListId") String todoListId);
