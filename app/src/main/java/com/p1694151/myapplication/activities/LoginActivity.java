@@ -64,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void callLoginApi(User user) {
         buttonLogin.showProgressIndicator(true);
-        Call<User> call = RestClient.apiService.signin(user.getEmail(), user.getPassword());
+        Call<User> call = RestClient.apiService.signin("?"+user.getEmail()+"&"+user.getPassword());
         call.enqueue(new Callback<User>() {
 
             @Override

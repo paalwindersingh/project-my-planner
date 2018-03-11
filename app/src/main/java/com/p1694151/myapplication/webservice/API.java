@@ -7,6 +7,7 @@ import com.p1694151.myapplication.models.User;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 import static com.p1694151.myapplication.webservice.Constants.ADD_EVENT;
@@ -31,11 +32,11 @@ import static com.p1694151.myapplication.webservice.Constants.UPDATE_EVENT;
 
 public interface API {
 
-    @GET(SIGN_IN)
-    Call<User> signin(@Query("email") String email, @Query("password") String password);
+    @GET(SIGN_IN+"{query}")
+    Call<User> signin(@Path("query") String query);
 
-    @GET(SIGN_UP)
-    Call<GeneralResponse> signup(@Query("firstname") String firstname,@Query("lastname") String lastname,@Query("dob") String dob,@Query("gender") String gender,@Query("email") String email,@Query("password") String password,@Query("phone") String phone);
+    @GET(SIGN_UP+"{query}")
+    Call<GeneralResponse> signup(@Path("query") String query);
 
     @GET(EVENT)
     Call<GeneralResponse> getEvent(@Query("eventid") String eventid);
