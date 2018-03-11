@@ -10,6 +10,9 @@ public class User {
     public User() {
     }
 
+    @SerializedName("userid")
+    private String userid = "";
+
     @SerializedName("firstname")
     private String firstname = "";
 
@@ -39,6 +42,14 @@ public class User {
 
     @SerializedName("timestamp")
     private String timestamp = "";
+
+    public String getUserid() {
+        return userid;
+    }
+
+    public void setUserid(String userid) {
+        this.userid = userid;
+    }
 
     public String getFirstname() {
         return firstname;

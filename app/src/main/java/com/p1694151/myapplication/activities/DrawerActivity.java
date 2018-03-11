@@ -16,13 +16,22 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
+import android.widget.Toast;
 
 import com.p1694151.myapplication.R;
 import com.p1694151.myapplication.adapter.TodoListAdapter;
 import com.p1694151.myapplication.models.TodoItem;
+import com.p1694151.myapplication.models.TodoListResponse;
+import com.p1694151.myapplication.models.User;
 import com.p1694151.myapplication.storage.LocalStore;
+import com.p1694151.myapplication.webservice.Constants;
+import com.p1694151.myapplication.webservice.RestClient;
 
 import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -80,14 +89,35 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     private void getTodoList() {
-        //todo replace with data from api call
+        /*//todo replace with data from api call
         todoList.add(new TodoItem(0, "Go to gym", "try exercising for 30mins"));
         todoList.add(new TodoItem(0, "get some grocery", "stop at bigmart while returning from work"));
         todoList.add(new TodoItem(0, "Do assignment", "Work 2hrs daily on final project"));
-        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));
+        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));*/
 
-        emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
-        cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);
+        //Call<TodoListResponse> call = RestClient.apiService.getTodoList("&"+LocalStore.getUser().getUserid());
+        Call<TodoListResponse> call = RestClient.apiService.getTodoList("&1");
+        call.enqueue(new Callback<TodoListResponse>() {
+
+            @Override
+            public void onResponse(Call<TodoListResponse> call, Response<TodoListResponse> response) {
+                todoList.clear();
+                TodoListResponse res = response.body();
+                if (res.getStatus().equals(Constants.SUCCESS)) {
+                    todoList.addAll(res.getTodoList());
+                    emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
+                    cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);
+                } else {
+                    /*emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
+                    cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);*/
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TodoListResponse> call, Throwable t) {
+            }
+
+        });
     }
 
     private void setAdapter() {
