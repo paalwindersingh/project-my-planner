@@ -79,7 +79,37 @@ public class SignupActivity extends AppCompatActivity {
 
     private void callSignupApi(final User user) {
         buttonSignup.showProgressIndicator(true);
-        Call<GeneralResponse> call = RestClient.apiService.signup("?"+user.getFirstname()+"&"+user.getLastname()+"&"+user.getDob()+"&"+user.getGender()+"&"+ user.getEmail()+"&"+ user.getPassword()+"&"+ user.getPhone());
+        StringBuilder query = new StringBuilder();
+        if(!user.getFirstname().isEmpty()){
+            query.append("&");
+            query.append(user.getFirstname());
+        }
+        if(!user.getLastname().isEmpty()){
+            query.append("&");
+            query.append(user.getLastname());
+        }
+        if(!user.getDob().isEmpty()){
+            query.append("&");
+            query.append(user.getDob());
+        }
+        if(!user.getGender().isEmpty()){
+            query.append("&");
+            query.append(user.getGender());
+        }
+        if(!user.getEmail().isEmpty()){
+            query.append("&");
+            query.append(user.getEmail());
+        }
+        if(!user.getPassword().isEmpty()){
+            query.append("&");
+            query.append(user.getPassword());
+        }
+        if(!user.getPhone().isEmpty()){
+            query.append("&");
+            query.append(user.getPhone());
+        }
+
+        Call<GeneralResponse> call = RestClient.apiService.signup(query.toString());
         call.enqueue(new Callback<GeneralResponse>() {
 
             @Override
