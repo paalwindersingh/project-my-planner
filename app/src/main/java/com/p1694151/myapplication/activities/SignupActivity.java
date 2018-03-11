@@ -79,7 +79,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void callSignupApi(final User user) {
         buttonSignup.showProgressIndicator(true);
-        Call<GeneralResponse> call = RestClient.apiService.signup(user.getFirstname(), user.getLastname(), user.getDob(), user.getGender(), user.getEmail(), user.getPassword(), user.getPhone());
+        Call<GeneralResponse> call = RestClient.apiService.signup("?"+user.getFirstname()+"&"+user.getLastname()+"&"+user.getDob()+"&"+user.getGender()+"&"+ user.getEmail()+"&"+ user.getPassword()+"&"+ user.getPhone());
         call.enqueue(new Callback<GeneralResponse>() {
 
             @Override
