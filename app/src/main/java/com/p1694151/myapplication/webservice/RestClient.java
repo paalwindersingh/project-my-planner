@@ -18,6 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RestClient {
     public static Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+            .disableHtmlEscaping()
             .create();
     // Define the interceptor, follow authentication headers
     static Interceptor interceptor = new Interceptor() {

@@ -64,7 +64,16 @@ public class LoginActivity extends AppCompatActivity {
 
     private void callLoginApi(User user) {
         buttonLogin.showProgressIndicator(true);
-        Call<User> call = RestClient.apiService.signin("?"+user.getEmail()+"&"+user.getPassword());
+        StringBuilder query = new StringBuilder();
+        if(!user.getEmail().isEmpty()){
+            query.append("&");
+            query.append(user.getEmail());
+        }
+        if(!user.getPassword().isEmpty()){
+            query.append("&");
+            query.append(user.getPassword());
+        }
+        Call<User> call = RestClient.apiService.signin(query.toString());
         call.enqueue(new Callback<User>() {
 
             @Override
@@ -77,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(LoginActivity.this, "Error logging in. Please try again!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, user.getMessage(), Toast.LENGTH_SHORT).show();
                     buttonLogin.showProgressIndicator(false);
                 }
             }
