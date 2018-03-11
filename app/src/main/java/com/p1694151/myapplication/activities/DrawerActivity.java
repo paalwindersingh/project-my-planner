@@ -95,7 +95,8 @@ public class DrawerActivity extends AppCompatActivity
         todoList.add(new TodoItem(0, "Do assignment", "Work 2hrs daily on final project"));
         todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));*/
 
-        Call<TodoListResponse> call = RestClient.apiService.getTodoList("&"+LocalStore.getUser().getUserid());
+        //Call<TodoListResponse> call = RestClient.apiService.getTodoList("&"+LocalStore.getUser().getUserid());
+        Call<TodoListResponse> call = RestClient.apiService.getTodoList("&1");
         call.enqueue(new Callback<TodoListResponse>() {
 
             @Override
