@@ -9,38 +9,37 @@ import com.google.gson.annotations.SerializedName;
 public class User {
     public User() {
     }
-
     @SerializedName("userid")
     private String userid = "";
 
-    @SerializedName("firstname")
+    @SerializedName("FirstName")
     private String firstname = "";
 
-    @SerializedName("lastname")
+    @SerializedName("LastName")
     private String lastname = "";
 
-    @SerializedName("dob")
+    @SerializedName("DOB")
     private String dob = "";
 
-    @SerializedName("gender")
+    @SerializedName("Gender")
     private String gender = "";
 
-    @SerializedName("email")
+    @SerializedName("Email")
     private String email = "";
 
     @SerializedName("password")
     private String password = "";
 
-    @SerializedName("phone")
+    @SerializedName("Phone")
     private String phone = "";
 
-    @SerializedName("message")
+    @SerializedName("Message")
     private String message = "";
 
-    @SerializedName("status")
+    @SerializedName("Status")
     private String status = "";
 
-    @SerializedName("timestamp")
+    @SerializedName("Timestamp")
     private String timestamp = "";
 
     public String getUserid() {

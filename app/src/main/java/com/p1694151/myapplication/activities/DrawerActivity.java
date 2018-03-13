@@ -1,6 +1,7 @@
 package com.p1694151.myapplication.activities;
 
 import android.content.Intent;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -13,11 +14,18 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alamkanak.weekview.DateTimeInterpreter;
+import com.alamkanak.weekview.MonthLoader;
+import com.alamkanak.weekview.WeekView;
+import com.alamkanak.weekview.WeekViewEvent;
 import com.p1694151.myapplication.R;
 import com.p1694151.myapplication.adapter.TodoListAdapter;
 import com.p1694151.myapplication.models.TodoItem;
@@ -27,16 +35,23 @@ import com.p1694151.myapplication.storage.LocalStore;
 import com.p1694151.myapplication.webservice.Constants;
 import com.p1694151.myapplication.webservice.RestClient;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class DrawerActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, WeekView.EventClickListener, MonthLoader.MonthChangeListener, WeekView.EventLongPressListener, WeekView.EmptyViewLongPressListener {
 
+    private TextView tvName;
+    private TextView tvEmail;
     private CalendarView simpleCalendarView;
+    private WeekView weekView;
     private FloatingActionButton addTodo;
     private CardView emptyView;
     private CardView cvHeader;
@@ -44,6 +59,11 @@ public class DrawerActivity extends AppCompatActivity
     private RecyclerView.LayoutManager layoutManager;
     private TodoListAdapter adapter;
     private ArrayList<TodoItem> todoList = new ArrayList<>();
+
+    private static final int TYPE_DAY_VIEW = 1;
+    private static final int TYPE_THREE_DAY_VIEW = 2;
+    private static final int TYPE_WEEK_VIEW = 3;
+    private int weekViewType = TYPE_THREE_DAY_VIEW;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +81,26 @@ public class DrawerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        View hView = navigationView.inflateHeaderView(R.layout.nav_header_drawer);
+
+        tvName = (TextView) hView.findViewById(R.id.tv_name);
+        tvEmail = (TextView) hView.findViewById(R.id.tv_email);
+
+        User user = LocalStore.getUser();
+        /*User user = new User();
+        user.setFirstname("Jas");
+        user.setEmail("jas@gmail.com");*/
+        if(user!=null){
+            tvName.setText(user.getFirstname());
+            tvEmail.setText(user.getEmail());
+        }
         emptyView = (CardView) findViewById(R.id.cardView);
         cvHeader = (CardView) findViewById(R.id.cv_header);
         todoListRv = (RecyclerView) findViewById(R.id.rv_todo_list);
         addTodo = (FloatingActionButton) findViewById(R.id.fab_todo);
 
 
+        weekView = (WeekView) findViewById(R.id.weekView);
         simpleCalendarView = (CalendarView) findViewById(R.id.calendarView); // get the reference of CalendarView
         simpleCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -75,6 +109,7 @@ public class DrawerActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
         addTodo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -86,7 +121,50 @@ public class DrawerActivity extends AppCompatActivity
         getTodoList();
 
         setAdapter();
+        
+        weeklyCalendarSetup();
+
+        simpleCalendarView.setVisibility( View.GONE);
     }
+
+    private void weeklyCalendarSetup() {
+        // Show a toast message about the touched event.
+        weekView.setOnEventClickListener(this);
+
+        // The week view has infinite scrolling horizontally. We have to provide the events of a
+        // month every time the month changes on the week view.
+        weekView.setMonthChangeListener(this);
+
+        // Set long press listener for events.
+        weekView.setEventLongPressListener(this);
+
+        // Set long press listener for empty view
+        weekView.setEmptyViewLongPressListener(this);
+
+        // Set up a date time interpreter to interpret how the date and time will be formatted in
+        // the week view. This is optional.
+        setupDateTimeInterpreter(false);
+    }
+
+    protected String getEventTitle(Calendar time) {
+        return String.format("Event of %02d:%02d %s/%d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.MONTH)+1, time.get(Calendar.DAY_OF_MONTH));
+    }
+
+    @Override
+    public void onEventClick(WeekViewEvent event, RectF eventRect) {
+        Toast.makeText(this, "Clicked " + event.getName(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onEventLongPress(WeekViewEvent event, RectF eventRect) {
+        Toast.makeText(this, "Long pressed event: " + event.getName(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onEmptyViewLongPress(Calendar time) {
+        Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show();
+    }
+
 
     private void getTodoList() {
         /*//todo replace with data from api call
@@ -151,14 +229,14 @@ public class DrawerActivity extends AppCompatActivity
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
             LocalStore.clearUser();
-            Intent loginscreen=new Intent(this,MainActivity.class);
+            Intent loginscreen = new Intent(this, MainActivity.class);
             loginscreen.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(loginscreen);
             finish();
-        }else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
-        }else if (id == R.id.nav_delete) {
+        } else if (id == R.id.nav_delete) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         }
@@ -166,5 +244,114 @@ public class DrawerActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        setupDateTimeInterpreter(id == R.id.action_week_view);
+        boolean isMonthView = false;
+        switch (id) {
+            case R.id.action_today:
+                weekView.goToToday();
+                weekView.setVisibility(View.VISIBLE);
+                simpleCalendarView.setVisibility( View.GONE);
+                return true;
+            case R.id.action_day_view:
+                if (weekViewType != TYPE_DAY_VIEW) {
+                    item.setChecked(!item.isChecked());
+                    weekViewType = TYPE_DAY_VIEW;
+                    weekView.setNumberOfVisibleDays(1);
+
+                    // Lets change some dimensions to best fit the view.
+                    weekView.setColumnGap((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+                    weekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+                    weekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+                    weekView.setVisibility(View.VISIBLE);
+                    simpleCalendarView.setVisibility( View.GONE);
+                }
+                return true;
+            case R.id.action_three_day_view:
+                if (weekViewType != TYPE_THREE_DAY_VIEW) {
+                    item.setChecked(!item.isChecked());
+                    weekViewType = TYPE_THREE_DAY_VIEW;
+                    weekView.setNumberOfVisibleDays(3);
+
+                    // Lets change some dimensions to best fit the view.
+                    weekView.setColumnGap((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+                    weekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+                    weekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+                    weekView.setVisibility(View.VISIBLE);
+                    simpleCalendarView.setVisibility( View.GONE);
+                }
+                return true;
+            case R.id.action_week_view:
+                if (weekViewType != TYPE_WEEK_VIEW) {
+                    item.setChecked(!item.isChecked());
+                    weekViewType = TYPE_WEEK_VIEW;
+                    weekView.setNumberOfVisibleDays(7);
+
+                    // Lets change some dimensions to best fit the view.
+                    weekView.setColumnGap((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics()));
+                    weekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
+                    weekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
+                    weekView.setVisibility(View.VISIBLE);
+                    simpleCalendarView.setVisibility( View.GONE);
+                }
+                return true;
+            case R.id.action_month_view:
+                isMonthView = true;
+                weekView.setVisibility(View.GONE);
+                simpleCalendarView.setVisibility( View.VISIBLE);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setupDateTimeInterpreter(final boolean shortDate) {
+        weekView.setDateTimeInterpreter(new DateTimeInterpreter() {
+            @Override
+            public String interpretDate(Calendar date) {
+                SimpleDateFormat weekdayNameFormat = new SimpleDateFormat("EEE", Locale.getDefault());
+                String weekday = weekdayNameFormat.format(date.getTime());
+                SimpleDateFormat format = new SimpleDateFormat(" M/d", Locale.getDefault());
+
+                // All android api level do not have a standard way of getting the first letter of
+                // the week day name. Hence we get the first char programmatically.
+                // Details: http://stackoverflow.com/questions/16959502/get-one-letter-abbreviation-of-week-day-of-a-date-in-java#answer-16959657
+                if (shortDate)
+                    weekday = String.valueOf(weekday.charAt(0));
+                return weekday.toUpperCase() + format.format(date.getTime());
+            }
+
+            @Override
+            public String interpretTime(int hour) {
+                return hour > 11 ? (hour - 12) + " PM" : (hour == 0 ? "12 AM" : hour + " AM");
+            }
+        });
+    }
+
+    @Override
+    public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+        List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+
+        Calendar startTime = Calendar.getInstance();
+        startTime.set(Calendar.HOUR_OF_DAY, 3);
+        startTime.set(Calendar.MINUTE, 0);
+        startTime.set(Calendar.MONTH, newMonth-1);
+        startTime.set(Calendar.YEAR, newYear);
+        Calendar endTime = (Calendar) startTime.clone();
+        endTime.add(Calendar.HOUR, 1);
+        endTime.set(Calendar.MONTH, newMonth-1);
+        WeekViewEvent event = new WeekViewEvent(1, getEventTitle(startTime), startTime, endTime);
+        events.add(event);
+        return events;
     }
 }
