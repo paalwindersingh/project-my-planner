@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.p1694151.myapplication.R;
@@ -33,6 +34,7 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etPhone;
     private EditText etEmail;
     private EditText etPassword;
+    private RadioGroup radioGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

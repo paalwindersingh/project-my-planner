@@ -26,6 +26,23 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <com.alamkanak.weekview.WeekView
+                android:id="@+id/weekView"
+                android:layout_width="match_parent"
+                android:layout_height="600dp"
+                app:eventTextColor="@android:color/white"
+                app:textSize="12sp"
+                app:hourHeight="60dp"
+                app:headerColumnPadding="8dp"
+                app:headerColumnTextColor="#8f000000"
+                app:headerRowPadding="12dp"
+                app:columnGap="8dp"
+                app:noOfVisibleDays="3"
+                app:headerRowBackgroundColor="#ffefefef"
+                app:dayBackgroundColor="#05000000"
+                app:todayBackgroundColor="#1848adff"
+                app:headerColumnBackground="#ffffffff"/>
+
             <android.support.v7.widget.CardView
                 android:id="@+id/cv_header"
                 android:layout_width="match_parent"
