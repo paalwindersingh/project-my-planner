@@ -77,6 +77,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:buttonTitle="Create" />
+
+            <com.p1694151.myapplication.utils.CustomButton
+                android:id="@+id/button_delete"
+                android:layout_marginTop="20dp"
+                style="@style/CustomButton"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:buttonTitle="Delete" />
         </LinearLayout>
 
     </ScrollView>
