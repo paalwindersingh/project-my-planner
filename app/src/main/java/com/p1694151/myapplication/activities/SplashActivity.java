@@ -27,7 +27,7 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(LocalStore.getUser() != null) {
+                if(LocalStore.getUser() == null) {
                     Intent intent = new Intent(SplashActivity.this, DrawerActivity.class);
                     startActivity(intent);
                 }else{

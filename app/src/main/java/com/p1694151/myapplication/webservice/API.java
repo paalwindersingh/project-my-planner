@@ -39,6 +39,9 @@ public interface API {
     @GET(SIGN_UP+"{query}")
     Call<GeneralResponse> signup(@Path("query") String query);
 
+    @GET(DELETE_TODO_LIST_ITEM+"{query}")
+    Call<GeneralResponse> deleteTodoListItem(@Path("query")  String todoListId);
+
     @GET(EVENT)
     Call<GeneralResponse> getEvent(@Query("eventid") String eventid);
 
@@ -51,8 +54,6 @@ public interface API {
     @GET(TODO_LIST_ITEM)
     Call<GeneralResponse> getTodoListItem(@Query("todoListId") String todoListId);
 
-    @GET(DELETE_TODO_LIST_ITEM)
-    Call<GeneralResponse> deleteTodoListItem(@Query("todoListId") String todoListId);
 
     @GET(DELETE_EVENT)
     Call<GeneralResponse> deleteEvent(@Query("eventId") String eventId);

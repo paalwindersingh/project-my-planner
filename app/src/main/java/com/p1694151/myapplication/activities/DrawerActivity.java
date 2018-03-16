@@ -114,6 +114,7 @@ public class DrawerActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(DrawerActivity.this, TodoListActivity.class);
+                intent.putExtra("isEditView", false);
                 startActivity(intent);
             }
         });
@@ -167,14 +168,14 @@ public class DrawerActivity extends AppCompatActivity
 
 
     private void getTodoList() {
-        /*//todo replace with data from api call
+        //todo replace with data from api call
         todoList.add(new TodoItem(0, "Go to gym", "try exercising for 30mins"));
         todoList.add(new TodoItem(0, "get some grocery", "stop at bigmart while returning from work"));
         todoList.add(new TodoItem(0, "Do assignment", "Work 2hrs daily on final project"));
-        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));*/
+        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));
 
         //Call<TodoListResponse> call = RestClient.apiService.getTodoList("&"+LocalStore.getUser().getUserid());
-        Call<TodoListResponse> call = RestClient.apiService.getTodoList("&1");
+     /*   Call<TodoListResponse> call = RestClient.apiService.getTodoList("&1");
         call.enqueue(new Callback<TodoListResponse>() {
 
             @Override
@@ -186,8 +187,8 @@ public class DrawerActivity extends AppCompatActivity
                     emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
                     cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);
                 } else {
-                    /*emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
-                    cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);*/
+                    *//*emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
+                    cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);*//*
                 }
             }
 
@@ -195,11 +196,11 @@ public class DrawerActivity extends AppCompatActivity
             public void onFailure(Call<TodoListResponse> call, Throwable t) {
             }
 
-        });
+        });*/
     }
 
     private void setAdapter() {
-        adapter = new TodoListAdapter(todoList);
+        adapter = new TodoListAdapter(todoList, this);
         layoutManager = new LinearLayoutManager(this);
 
         todoListRv.setLayoutManager(layoutManager);
