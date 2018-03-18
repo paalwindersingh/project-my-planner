@@ -46,8 +46,11 @@ public interface API {
     @GET(EVENT_LIST+"{query}")
     Call<EventListResponse> getEventList(@Path("query") String userId);
 
-    @GET(EVENT)
+    @GET(EVENT+"{query}")
     Call<GeneralResponse> getEvent(@Query("eventid") String eventid);
+
+    @GET(ADD_EVENT)
+    Call<GeneralResponse> addEvent(@Path("query") String query);
 
     @GET(TODO_LIST+"{query}")
     Call<TodoListResponse> getTodoList(@Path("query") String userId);
@@ -62,11 +65,7 @@ public interface API {
     @GET(DELETE_TODO_ITEM)
     Call<GeneralResponse> deleteTodoItem(@Query("todoListId") String todoListId,@Query("taskId") String taskId);
 
-    @GET(ADD_EVENT)
-    Call<GeneralResponse> addEvent(@Query("Event_Title") String Event_Title,@Query("Start_Time") String Start_Time,@Query("End_Time") String End_Time,@Query("Start_Date") String Start_Date,
-                                   @Query("End_Date") String End_Date,@Query("Description") String Description,@Query("Address") String Address,@Query("City") String City,
-                                   @Query("State") String State,@Query("Postal_Code") String Postal_Code,@Query("Reminder_Start_Time") String Reminder_Start_Time,@Query("Reminder_End_Time") String Reminder_End_Time,
-                                   @Query("Reminder_Date") String Reminder_Date,@Query("Reminder_Description") String Reminder_Description);
+
     @GET(UPDATE_EVENT)
     Call<GeneralResponse> updateEvent(@Query("Event_Title") String Event_Title,@Query("Start_Time") String Start_Time,@Query("End_Time") String End_Time,@Query("Start_Date") String Start_Date,
                                    @Query("End_Date") String End_Date,@Query("Description") String Description,@Query("Address") String Address,@Query("City") String City,

@@ -1,12 +1,15 @@
 package com.p1694151.myapplication.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by paalwinder on 07/03/18.
  */
 
-public class Event {
+public class Event implements Parcelable{
     public Event() {
     }
 
@@ -28,6 +31,48 @@ public class Event {
     private String Postal_Code = "";
     @SerializedName("Country")
     private String Country = "";
+
+    protected Event(Parcel in) {
+        Description = in.readString();
+        Start_Date = in.readString();
+        End_Date = in.readString();
+        Start_Time = in.readString();
+        End_Time = in.readString();
+        Address = in.readString();
+        City = in.readString();
+        Postal_Code = in.readString();
+        Country = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(Description);
+        dest.writeString(Start_Date);
+        dest.writeString(End_Date);
+        dest.writeString(Start_Time);
+        dest.writeString(End_Time);
+        dest.writeString(Address);
+        dest.writeString(City);
+        dest.writeString(Postal_Code);
+        dest.writeString(Country);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Event> CREATOR = new Creator<Event>() {
+        @Override
+        public Event createFromParcel(Parcel in) {
+            return new Event(in);
+        }
+
+        @Override
+        public Event[] newArray(int size) {
+            return new Event[size];
+        }
+    };
 
     public String getDescription() {
         return Description;

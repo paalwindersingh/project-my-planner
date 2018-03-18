@@ -1,8 +1,10 @@
 package com.p1694151.myapplication.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -27,21 +29,30 @@ import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.applandeo.materialcalendarview.CalendarView;
 import com.applandeo.materialcalendarview.EventDay;
+import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 import com.p1694151.myapplication.R;
 import com.p1694151.myapplication.adapter.TodoListAdapter;
 import com.p1694151.myapplication.models.Event;
 import com.p1694151.myapplication.models.EventListResponse;
 import com.p1694151.myapplication.models.TodoItem;
+import com.p1694151.myapplication.models.TodoListResponse;
 import com.p1694151.myapplication.models.User;
 import com.p1694151.myapplication.storage.LocalStore;
+import com.p1694151.myapplication.utils.DateUtils;
+import com.p1694151.myapplication.utils.EventDecorator;
 import com.p1694151.myapplication.webservice.Constants;
 import com.p1694151.myapplication.webservice.RestClient;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 
+import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,7 +65,7 @@ public class DrawerActivity extends AppCompatActivity
 
     private TextView tvName;
     private TextView tvEmail;
-    private CalendarView simpleCalendarView;
+    private MaterialCalendarView simpleCalendarView;
     private WeekView weekView;
     private FloatingActionButton addTodo;
     private CardView emptyView;
@@ -64,12 +75,20 @@ public class DrawerActivity extends AppCompatActivity
     private TodoListAdapter adapter;
     private ArrayList<TodoItem> todoList = new ArrayList<>();
     private ArrayList<Event> eventList = new ArrayList<>();
-    List<EventDay> events = new ArrayList<>();
+    List<CalendarDay> events = new ArrayList<>();
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
     private static final int TYPE_WEEK_VIEW = 3;
     private int weekViewType = TYPE_THREE_DAY_VIEW;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (simpleCalendarView != null) {
+            getEventList();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +103,6 @@ public class DrawerActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        getEventList();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -98,7 +115,7 @@ public class DrawerActivity extends AppCompatActivity
         /*User user = new User();
         user.setFirstname("Jas");
         user.setEmail("jas@gmail.com");*/
-        if(user!=null){
+        if (user != null) {
             tvName.setText(user.getFirstname());
             tvEmail.setText(user.getEmail());
         }
@@ -109,23 +126,19 @@ public class DrawerActivity extends AppCompatActivity
 
 
         weekView = (WeekView) findViewById(R.id.weekView);
-        simpleCalendarView = (CalendarView) findViewById(R.id.calendarView); // get the reference of CalendarView
-
-        simpleCalendarView.setOnDayClickListener(new OnDayClickListener() {
+        simpleCalendarView = (MaterialCalendarView) findViewById(R.id.calendarView); // get the reference of CalendarView
+        simpleCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
-            public void onDayClick(EventDay eventDay) {
-                Calendar clickedDayCalendar = eventDay.getCalendar();
+            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
                 Intent intent = new Intent(DrawerActivity.this, DailyEventsActivity.class);
+                intent.putExtra("cal", date.getCalendar().getTimeInMillis());
+                intent.putExtra("events", eventList);
                 startActivity(intent);
             }
         });
 
-       /* simpleCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-
-            }
-        });*/
+        simpleCalendarView.setShowOtherDates(MaterialCalendarView.SHOW_ALL);
+        getEventList();
 
         addTodo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,35 +152,81 @@ public class DrawerActivity extends AppCompatActivity
         getTodoList();
 
         setAdapter();
-        
+
         weeklyCalendarSetup();
 
-        simpleCalendarView.setVisibility( View.GONE);
+        simpleCalendarView.setVisibility(View.GONE);
     }
 
     private void getEventList() {
-       Call<EventListResponse> call = RestClient.apiService.getEventList("");
+        eventList.clear();
+        events.clear();
+
+        //todo comment when connected to server
+       /* Event event = new Event();
+        event.setStart_Date("2018-03-18 00:00:00.0");
+        event.setEnd_Date("2018-03-18 00:00:00.0");
+        event.setStart_Time("07:00AM");
+        event.setEnd_Time("08:00PM");
+        event.setDescription("abc 1");
+        eventList.add(event);
+        event = new Event();
+        event.setStart_Date("2018-04-12 00:00:00.0");
+        event.setEnd_Date("2018-04-12 00:00:00.0");
+        event.setStart_Time("02:00AM");
+        event.setEnd_Time("03:00AM");
+        event.setDescription("abc 2");
+        eventList.add(event);
+        event = new Event();
+        event.setStart_Date("2018-04-18 00:00:00.0");
+        event.setEnd_Date("2018-04-18 00:00:00.0");
+        event.setStart_Time("07:00AM");
+        event.setEnd_Time("08:00PM");
+        event.setDescription("abc 3");
+        eventList.add(event);
+        event = new Event();
+        event.setStart_Date("2018-04-13 00:00:00.0");
+        event.setEnd_Date("2018-04-13 00:00:00.0");
+        event.setStart_Time("07:00AM");
+        event.setEnd_Time("08:00PM");
+        event.setDescription("abc 4");
+        eventList.add(event);
+        event = new Event();
+        event.setStart_Date("2018-05-10 00:00:00.0");
+        event.setEnd_Date("2018-05-10 00:00:00.0");
+        event.setStart_Time("07:00AM");
+        event.setEnd_Time("08:00PM");
+        event.setDescription("abc 5");
+        eventList.add(event);
+        event = new Event();
+        event.setStart_Date("2018-03-18 00:00:00.0");
+        event.setEnd_Date("2018-03-18 00:00:00.0");
+        event.setStart_Time("02:00AM");
+        event.setEnd_Time("08:00PM");
+        event.setDescription("abc 6");
+        eventList.add(event);
+        for (int i = 0; i < eventList.size(); i++) {
+            Event event1 = eventList.get(i);
+            CalendarDay eventDay = CalendarDay.from(DateUtils.getCalenderInstance(event1.getStart_Date(), DateUtils.TIMESTAMP_FORMAT));
+            events.add(eventDay);
+        }
+        simpleCalendarView.addDecorator(new EventDecorator(Color.RED, events));*/
+        Call<EventListResponse> call = RestClient.apiService.getEventList("");
         call.enqueue(new Callback<EventListResponse>() {
 
             @Override
             public void onResponse(Call<EventListResponse> call, Response<EventListResponse> response) {
                 todoList.clear();
                 EventListResponse res = response.body();
-                Calendar cal = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.z", Locale.ENGLISH);
+
                 if (res.getStatus().equals(Constants.SUCCESS)) {
                     eventList.addAll(res.getEventList());
-                    for(int i=0;i<eventList.size();i++){
-                        Event event = eventList.get(i);
-                        try {
-                            cal.setTime(sdf.parse(event.getStart_Date()));
-                            EventDay eventDay = new EventDay(cal);
-                            events.add(eventDay);
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
+                    for (int i = 0; i < eventList.size(); i++) {
+                        Event event1 = eventList.get(i);
+                        CalendarDay eventDay = CalendarDay.from(DateUtils.getCalenderInstance(event1.getStart_Date(), DateUtils.TIMESTAMP_FORMAT));
+                        events.add(eventDay);
                     }
-                    simpleCalendarView.setEvents(events);
+                    simpleCalendarView.addDecorator(new EventDecorator(Color.RED, events));
                 } else {
 
                 }
@@ -199,35 +258,40 @@ public class DrawerActivity extends AppCompatActivity
         setupDateTimeInterpreter(false);
     }
 
-    protected String getEventTitle(Calendar time) {
-        return String.format("Event of %02d:%02d %s/%d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.MONTH)+1, time.get(Calendar.DAY_OF_MONTH));
-    }
-
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-        Toast.makeText(this, "Clicked " + event.getName(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(DrawerActivity.this, DailyEventsActivity.class);
+        intent.putExtra("events", eventList);
+        intent.putExtra("cal", event.getStartTime().getTimeInMillis());
+        startActivity(intent);
     }
 
     @Override
     public void onEventLongPress(WeekViewEvent event, RectF eventRect) {
-        Toast.makeText(this, "Long pressed event: " + event.getName(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(DrawerActivity.this, DailyEventsActivity.class);
+        intent.putExtra("events", eventList);
+        intent.putExtra("cal", event.getStartTime().getTimeInMillis());
+        startActivity(intent);
     }
 
     @Override
     public void onEmptyViewLongPress(Calendar time) {
-        Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(DrawerActivity.this, DailyEventsActivity.class);
+        intent.putExtra("events", eventList);
+        intent.putExtra("cal", time.getTimeInMillis());
+        startActivity(intent);
     }
 
 
     private void getTodoList() {
         //todo replace with data from api call
-        todoList.add(new TodoItem(0, "Go to gym", "try exercising for 30mins"));
+       /* todoList.add(new TodoItem(0, "Go to gym", "try exercising for 30mins"));
         todoList.add(new TodoItem(0, "get some grocery", "stop at bigmart while returning from work"));
         todoList.add(new TodoItem(0, "Do assignment", "Work 2hrs daily on final project"));
-        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));
+        todoList.add(new TodoItem(0, "Submit update", "submit update twice a week"));*/
 
         //Call<TodoListResponse> call = RestClient.apiService.getTodoList("&"+LocalStore.getUser().getUserid());
-     /*   Call<TodoListResponse> call = RestClient.apiService.getTodoList("&1");
+        Call<TodoListResponse> call = RestClient.apiService.getTodoList("&1");
         call.enqueue(new Callback<TodoListResponse>() {
 
             @Override
@@ -239,8 +303,8 @@ public class DrawerActivity extends AppCompatActivity
                     emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
                     cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);
                 } else {
-                    *//*emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
-                    cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);*//*
+                    emptyView.setVisibility(todoList.isEmpty() ? View.VISIBLE : View.GONE);
+                    cvHeader.setVisibility(!todoList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -248,7 +312,7 @@ public class DrawerActivity extends AppCompatActivity
             public void onFailure(Call<TodoListResponse> call, Throwable t) {
             }
 
-        });*/
+        });
     }
 
     private void setAdapter() {
@@ -314,7 +378,7 @@ public class DrawerActivity extends AppCompatActivity
             case R.id.action_today:
                 weekView.goToToday();
                 weekView.setVisibility(View.VISIBLE);
-                simpleCalendarView.setVisibility( View.GONE);
+                simpleCalendarView.setVisibility(View.GONE);
                 return true;
             case R.id.action_day_view:
                 if (weekViewType != TYPE_DAY_VIEW) {
@@ -327,7 +391,7 @@ public class DrawerActivity extends AppCompatActivity
                     weekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
                     weekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
                     weekView.setVisibility(View.VISIBLE);
-                    simpleCalendarView.setVisibility( View.GONE);
+                    simpleCalendarView.setVisibility(View.GONE);
                 }
                 return true;
             case R.id.action_three_day_view:
@@ -341,7 +405,7 @@ public class DrawerActivity extends AppCompatActivity
                     weekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
                     weekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
                     weekView.setVisibility(View.VISIBLE);
-                    simpleCalendarView.setVisibility( View.GONE);
+                    simpleCalendarView.setVisibility(View.GONE);
                 }
                 return true;
             case R.id.action_week_view:
@@ -355,13 +419,13 @@ public class DrawerActivity extends AppCompatActivity
                     weekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
                     weekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
                     weekView.setVisibility(View.VISIBLE);
-                    simpleCalendarView.setVisibility( View.GONE);
+                    simpleCalendarView.setVisibility(View.GONE);
                 }
                 return true;
             case R.id.action_month_view:
                 isMonthView = true;
                 weekView.setVisibility(View.GONE);
-                simpleCalendarView.setVisibility( View.VISIBLE);
+                simpleCalendarView.setVisibility(View.VISIBLE);
                 return true;
         }
 
@@ -395,16 +459,30 @@ public class DrawerActivity extends AppCompatActivity
     public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
 
-        Calendar startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 3);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        Calendar endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR, 1);
-        endTime.set(Calendar.MONTH, newMonth-1);
-        WeekViewEvent event = new WeekViewEvent(1, getEventTitle(startTime), startTime, endTime);
-        events.add(event);
+        for (int i = 0; i < eventList.size(); i++) {
+            Event thisevent = eventList.get(i);
+
+
+            Calendar startTime = DateUtils.getCalenderInstance(thisevent.getStart_Date(), DateUtils.TIMESTAMP_FORMAT);
+            Calendar cal = DateUtils.getCalenderInstance(thisevent.getStart_Time(), DateUtils.TIME_FORMAT);
+            int month = startTime.get(Calendar.MONTH);
+            if (month == newMonth - 1) {
+                int hr = cal.get(Calendar.HOUR_OF_DAY);
+                int min = cal.get(Calendar.MINUTE);
+                startTime.set(Calendar.HOUR_OF_DAY, hr);
+                startTime.set(Calendar.MINUTE, min);
+
+                Calendar endTime = (Calendar) startTime.clone();
+                cal = DateUtils.getCalenderInstance(thisevent.getEnd_Time(), DateUtils.TIME_FORMAT);
+                hr = cal.get(Calendar.HOUR_OF_DAY);
+                min = cal.get(Calendar.MINUTE);
+                endTime.set(Calendar.HOUR_OF_DAY, hr);
+                endTime.set(Calendar.MINUTE, min);
+
+                WeekViewEvent event = new WeekViewEvent(i, thisevent.getDescription(), startTime, endTime);
+                events.add(event);
+            }
+        }
         return events;
     }
 }
