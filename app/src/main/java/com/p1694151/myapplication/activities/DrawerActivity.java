@@ -18,7 +18,6 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,15 +25,20 @@ import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
+import com.applandeo.materialcalendarview.CalendarView;
+import com.applandeo.materialcalendarview.EventDay;
+import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 import com.p1694151.myapplication.R;
 import com.p1694151.myapplication.adapter.TodoListAdapter;
+import com.p1694151.myapplication.models.Event;
+import com.p1694151.myapplication.models.EventListResponse;
 import com.p1694151.myapplication.models.TodoItem;
-import com.p1694151.myapplication.models.TodoListResponse;
 import com.p1694151.myapplication.models.User;
 import com.p1694151.myapplication.storage.LocalStore;
 import com.p1694151.myapplication.webservice.Constants;
 import com.p1694151.myapplication.webservice.RestClient;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,6 +63,8 @@ public class DrawerActivity extends AppCompatActivity
     private RecyclerView.LayoutManager layoutManager;
     private TodoListAdapter adapter;
     private ArrayList<TodoItem> todoList = new ArrayList<>();
+    private ArrayList<Event> eventList = new ArrayList<>();
+    List<EventDay> events = new ArrayList<>();
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -77,6 +83,8 @@ public class DrawerActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        getEventList();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -102,13 +110,22 @@ public class DrawerActivity extends AppCompatActivity
 
         weekView = (WeekView) findViewById(R.id.weekView);
         simpleCalendarView = (CalendarView) findViewById(R.id.calendarView); // get the reference of CalendarView
-        simpleCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+
+        simpleCalendarView.setOnDayClickListener(new OnDayClickListener() {
             @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+            public void onDayClick(EventDay eventDay) {
+                Calendar clickedDayCalendar = eventDay.getCalendar();
                 Intent intent = new Intent(DrawerActivity.this, DailyEventsActivity.class);
                 startActivity(intent);
             }
         });
+
+       /* simpleCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+
+            }
+        });*/
 
         addTodo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,6 +143,41 @@ public class DrawerActivity extends AppCompatActivity
         weeklyCalendarSetup();
 
         simpleCalendarView.setVisibility( View.GONE);
+    }
+
+    private void getEventList() {
+       Call<EventListResponse> call = RestClient.apiService.getEventList("");
+        call.enqueue(new Callback<EventListResponse>() {
+
+            @Override
+            public void onResponse(Call<EventListResponse> call, Response<EventListResponse> response) {
+                todoList.clear();
+                EventListResponse res = response.body();
+                Calendar cal = Calendar.getInstance();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.z", Locale.ENGLISH);
+                if (res.getStatus().equals(Constants.SUCCESS)) {
+                    eventList.addAll(res.getEventList());
+                    for(int i=0;i<eventList.size();i++){
+                        Event event = eventList.get(i);
+                        try {
+                            cal.setTime(sdf.parse(event.getStart_Date()));
+                            EventDay eventDay = new EventDay(cal);
+                            events.add(eventDay);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    simpleCalendarView.setEvents(events);
+                } else {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<EventListResponse> call, Throwable t) {
+            }
+
+        });
     }
 
     private void weeklyCalendarSetup() {

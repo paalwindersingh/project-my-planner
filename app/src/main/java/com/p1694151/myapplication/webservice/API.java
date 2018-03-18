@@ -2,6 +2,7 @@ package com.p1694151.myapplication.webservice;
 
 
 
+import com.p1694151.myapplication.models.EventListResponse;
 import com.p1694151.myapplication.models.GeneralResponse;
 import com.p1694151.myapplication.models.TodoListResponse;
 import com.p1694151.myapplication.models.User;
@@ -42,11 +43,11 @@ public interface API {
     @GET(DELETE_TODO_LIST_ITEM+"{query}")
     Call<GeneralResponse> deleteTodoListItem(@Path("query")  String todoListId);
 
+    @GET(EVENT_LIST+"{query}")
+    Call<EventListResponse> getEventList(@Path("query") String userId);
+
     @GET(EVENT)
     Call<GeneralResponse> getEvent(@Query("eventid") String eventid);
-
-    @GET(EVENT_LIST)
-    Call<GeneralResponse> getEventList();
 
     @GET(TODO_LIST+"{query}")
     Call<TodoListResponse> getTodoList(@Path("query") String userId);
