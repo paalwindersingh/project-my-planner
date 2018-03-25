@@ -79,18 +79,26 @@
         android:hint="Edit DOB"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/et_phone" />
-    <EditText
-        android:id="@+id/et_gender"
-        style="@style/CustomEditText"
+    <RadioGroup
+        android:id="@+id/radioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:hint="Edit gender"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_dob" />
-
+        app:layout_constraintTop_toBottomOf="@+id/et_dob" >
+        <RadioButton
+            android:id="@+id/rb_male"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Male"/>
+        <RadioButton
+            android:id="@+id/rb_female"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Female"/>
+    </RadioGroup>
     <EditText
         android:id="@+id/et_password"
         style="@style/CustomEditText"
@@ -101,7 +109,7 @@
         android:hint="Edit Password"
         android:inputType="textPassword"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_gender" />
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 
     <com.p1694151.myapplication.utils.CustomButton
         android:id="@+id/button_save"

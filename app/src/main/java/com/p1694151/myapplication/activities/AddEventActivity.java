@@ -77,15 +77,16 @@ public class AddEventActivity extends AppCompatActivity {
         String city = etCity.getText().toString();
         String state = etState.getText().toString();
         String pin = etPostCode.getText().toString();
-        String reminderStartTime = "";
-        String reminderEndTime = "";
-        String reminder = "";
-
+        String reminderStartTime = "07:00am";
+        String reminderEndTime = "08:00am";
+        String reminder = "Reminder details";
+        String country = "Canada";
+        String reminderDate = "2018-04-05";
+//{country}&{reminderStartTime}&{reminderEndTime}&{reminderDate}&{reminderDescription}
         Call<GeneralResponse> call = RestClient.apiService.addEvent("&" + title+"&"+description+"&"+
                 startTime+"&"+endTime+"&"+startDate+"&"+endDate+
-                "&"+address+"&"+city+"&"+state+"&"+pin+"&"+reminderStartTime+"&"+reminderEndTime+"&"+reminder);
+                "&"+address+"&"+city+"&"+state+"&"+pin+"&"+country+"&"+reminderStartTime+"&"+reminderEndTime+"&"+reminderDate+"&"+reminder);
         call.enqueue(new Callback<GeneralResponse>() {
-
             @Override
             public void onResponse(Call<GeneralResponse> call, Response<GeneralResponse> response) {
                 GeneralResponse res = response.body();
