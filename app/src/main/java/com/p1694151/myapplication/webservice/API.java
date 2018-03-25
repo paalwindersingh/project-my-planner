@@ -49,11 +49,14 @@ public interface API {
     @GET(EVENT+"{query}")
     Call<GeneralResponse> getEvent(@Query("eventid") String eventid);
 
-    @GET(ADD_EVENT)
+    @GET(ADD_EVENT+"{query}")
     Call<GeneralResponse> addEvent(@Path("query") String query);
 
     @GET(TODO_LIST+"{query}")
     Call<TodoListResponse> getTodoList(@Path("query") String userId);
+
+    @GET(CHANGE_USERNAME+"{query}")
+    Call<GeneralResponse> changeUsername(@Path("query") String query);
 
     @GET(TODO_LIST_ITEM)
     Call<GeneralResponse> getTodoListItem(@Query("todoListId") String todoListId);
@@ -93,6 +96,4 @@ public interface API {
     @GET(CHANGE_PASSWORD)
     Call<GeneralResponse> changePassword(@Query("Email_Id") String Email_Id,@Query("Old_Password") String Old_Password,@Query("New_Password") String New_Password);
 
-    @GET(CHANGE_USERNAME)
-    Call<GeneralResponse> changeUsername(@Query("Email_Id") String Email_Id,@Query("firstname") String firstname,@Query("lastname") String lastname);
-}
+    }
